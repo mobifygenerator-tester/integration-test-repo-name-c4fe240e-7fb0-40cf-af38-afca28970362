@@ -1,0 +1,117 @@
+<script>
+// Enclose with a function to prevent any possible leakage on global window.
+(function(window, document) {
+    // We want the value of two preview parameters. They may be stored in
+    // the window.location.hash, or in a preview cookie. Any hash values
+    // override cookie values.
+    // This RE will extract the value of mobify-path, in group 2.
+    // Because IE doesn't include the '=' in empty values, the RE makes it optional.
+    var mobifyPathRE = /(^|;\s*|#|&)mobify-path=?([^;&]*)/;
+
+    // Variables to reduce the minified tag size
+    var hash = window.location.hash,
+        cookie = document.cookie;
+
+    // Get the value of any preview mobify-path value.
+    var match = mobifyPathRE.exec(hash) || mobifyPathRE.exec(cookie),
+        mobifyPath = match && match[2];
+
+    // Set the optOut and isPreview flags according to the path value.
+    // Set optOut true if the path is empty, preview true if the path
+    // is the string value 'true'.
+    var optOut = mobifyPath === "",
+        isPreview = mobifyPath === "true";
+
+    // nonPWAMode is true if the non-PWA flag is set in the URL
+    var nonPWARE = /non-pwa=1/,
+        nonPWAMode = nonPWARE.test(hash) || nonPWARE.test(cookie)
+
+    // The shouldLoadPWA flag is set true if the UA appears to be
+    // for a browser that supports PWAs, or if we are in preview mode,
+    // but will be forced to false for nonPWA mode. We set this in preview
+    // mode for compatibility with the V7 tag behaviour - preview forces
+    // Mobifying of the page.
+    var shouldLoadPWA = (
+        // The scaffold loader may also check the user-agent. If you modify this
+        // regexp, you should also check the code in `web/app/loader.js` to
+        // see if it should also change.
+        /ip(hone|od)|android.*(mobile)|blackberry.*applewebkit|bb1\d.*mobile/i.test(window.navigator.userAgent) ||
+        (isPreview && !nonPWAMode)
+    );
+
+    // If shouldLoadPWA is true, then we load synchronously. Technically, the
+    // shouldLoadPWA flag tells the loader whether to load in PWA or nonPWA mode,
+    // but we can also use it to determine loading behaviour, since PWA mode
+    // requires sync loading, and nonPWA mode always uses async loading.
+
+    window.Mobify = {
+        // Tag V8.1 sets some extra flags that V8 did not.
+        tagVersion: [8, 1],
+        points: [+(new Date())],
+
+        isPreview: isPreview,
+        shouldLoadPWA: shouldLoadPWA,
+        nonPWAMode: nonPWAMode,
+        optOut: optOut,
+
+        disableTag: function() {
+            // Make it possible to detect that the tag ran but then disabled
+            // operation.
+            window.Mobify.disabled = 1
+
+            // This workaround addresses an iOS fallthrough issue, where
+            // the iOS 8 "preload top hits" option will load a Mobified page
+            // in the background when typing in an address into the URL bar.
+            // Safari seems to cancel the script download, resulting in
+            // us incorrectly setting the opt-out cookie.
+            //
+            // We get around this by ignoring script failures in a
+            // background tab.
+            //
+            // Related ticket: https://mobify.atlassian.net/browse/RTM-280
+            if (document.visibilityState && document.hidden) {
+                return;
+            }
+
+            // Set a blank mobify-path cookie so that the next time the page
+            // is reloaded, the tag will be disabled for 5 minutes and load the
+            // original website.
+            document.cookie = "mobify-path=; expires=" +
+            // Expiration is 5 minutes ahead of now
+            new Date(Date.now() + 5 * 60 * 1000).toGMTString() +
+            "; path=/";
+        }
+    };
+
+    // If we are not loading a PWA, prevent synchronous loading
+    // by injecting an HTML comment tag into the page.
+    if (!shouldLoadPWA || optOut) {
+        // The minifier code for the V8 tag will avoid turning this
+        // string into one that matches an HTML start-comment. It's
+        // here as two separate strings to allow testing of the
+        // unminified tag also.
+        document.write("<" + "!--");
+    }
+})(window, document);
+</script>
+<script src="https://cdn.mobify.com/sites/mobify-project-id-5d9813e4-d701-424a-a037-bd5c3550a4f3/production/loader.js" id="mobify-v8-tag" onerror="window.Mobify.disableTag()"></script>
+<script>/* Needed to close opening comment tag to prevent sync loader.js from rendering */ --> </script>
+<script>
+(function(window, document){
+    var mobify = window.Mobify;
+    if (!mobify.shouldLoadPWA && !mobify.optOut) {
+        // If we shouldn't load the PWA, then we'll load loader.js async:
+        var loader = document.createElement("script"),
+            firstScript = document.getElementsByTagName("script")[0];
+
+        loader.src = "https://cdn.mobify.com/sites/mobify-project-id-5d9813e4-d701-424a-a037-bd5c3550a4f3/production/loader.js";
+        loader.id = "mobify-v8-tag";
+        // Still important for some browsers to set async=true, see:
+        // https://www.html5rocks.com/en/tutorials/speed/script-loading/
+        loader.async = true;
+        loader.onerror = mobify.disableTag;
+
+        firstScript.parentNode.insertBefore(loader, firstScript);
+    }
+})(window, document);
+</script>

@@ -1,0 +1,8 @@
+{
+    "files": {
+    	"loader.js": 217523,
+    	"main.css": 212000,
+        "main.js": 240000,
+        "vendor.js": 374000
+    }
+}

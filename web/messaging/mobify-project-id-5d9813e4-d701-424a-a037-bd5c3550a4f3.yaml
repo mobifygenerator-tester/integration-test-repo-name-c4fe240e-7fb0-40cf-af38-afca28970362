@@ -1,0 +1,29 @@
+site_id: mobify-project-id-5d9813e4-d701-424a-a037-bd5c3550a4f3
+
+config:
+    mobify_property_id: mobify-project-id-5d9813e4-d701-424a-a037-bd5c3550a4f3
+    business_slug: mobify-project-id-5d9813e4-d701-424a-a037-bd5c3550a4f3
+    cloud_slug: mobify-project-id-5d9813e4-d701-424a-a037-bd5c3550a4f3
+
+    # Human-readable site name
+    friendly_site_name: www.mobify.com
+
+    # Must be a 192x192 icon file.
+    default_icon_url: https://cdn.mobify.com/sites/mobify-project-id-5d9813e4-d701-424a-a037-bd5c3550a4f3/production/static/img/global/app-icon.png
+
+    # Default is to use the URL for the target domain, via https
+    default_url: https://www.mobify.com
+
+    # The domain (netloc) of the project's website, which must be
+    # https-everywhere. Do not include the 'https://' here - this
+    # is the domain name only.
+    target_domain: www.mobify.com
+
+    # This is set for a Progressive Web App
+    pwa: true
+
+
+    # Send a push message to new subscribers confirming
+    # that they have subscribed.
+    send_welcome_message: false
+

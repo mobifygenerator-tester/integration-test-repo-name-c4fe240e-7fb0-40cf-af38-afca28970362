@@ -1,0 +1,14 @@
+{
+  "name": "Mobify Generator Test",
+  "short_name": "Mobify Generator Test",
+  "start_url": "https://www.mobify.com",
+  "background_color": "#fff",
+  "theme_color":" #4e439b",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "https://cdn.mobify.com/sites/mobify-project-id-5d9813e4-d701-424a-a037-bd5c3550a4f3/production/static/img/global/app-icon.png",
+      "sizes": "192x192"
+    }
+  ]
+}
